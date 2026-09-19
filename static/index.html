@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataStraw Support Desk | Operations</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 border-b border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo & Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-inner">
+                        DS
+                    </div>
+                    <div>
+                        <span class="text-lg font-bold tracking-tight text-white block leading-tight">DataStraw</span>
+                        <span class="text-xs text-slate-400 font-medium">Support Desk Operations</span>
+                    </div>
+                </div>
+
+                <!-- Header Action Buttons -->
+                <div class="flex items-center space-x-3">
+                    <!-- Primary Action Button -->
+                    <button onclick="toggleModal(true)" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-500 active:bg-indigo-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        New Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+        <!-- Analytics Overview Cards -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Tickets</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1" id="statTotal">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Open</p>
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                </div>
+                <h3 class="text-2xl font-bold text-rose-600 mt-1" id="statOpen">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">In Progress</p>
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                </div>
+                <h3 class="text-2xl font-bold text-amber-600 mt-1" id="statInProgress">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Urgent SLA Breaches</p>
+                    <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                </div>
+                <h3 class="text-2xl font-bold text-red-600 mt-1" id="statUrgent">0</h3>
+            </div>
+        </section>
+
+        <!-- Search & Dynamic Filter Controls -->
+        <section class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <input type="text" id="searchInput" oninput="fetchTickets()" placeholder="Search DataStraw tickets by ID, customer name, email, or issue description..."
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <!-- Status Filter -->
+                <div class="w-full sm:w-40">
+                    <select id="statusFilter" onchange="fetchTickets()"
+                            class="w-full py-2.5 px-3 bg-slate-50 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <option value="">All Statuses</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+
+                <!-- Priority Filter -->
+                <div class="w-full sm:w-44">
+                    <select id="priorityFilter" onchange="fetchTickets()"
+                            class="w-full py-2.5 px-3 bg-slate-50 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <option value="">All Priorities</option>
+                        <option value="Low">Low (&lt; 2h)</option>
+                        <option value="Medium">Medium (2–12h)</option>
+                        <option value="Urgent">Urgent (&gt; 12h)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Tickets Table & Mobile Responsive Cards Container -->
+        <section class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            <th class="py-3.5 px-6">Ticket ID</th>
+                            <th class="py-3.5 px-6">Customer</th>
+                            <th class="py-3.5 px-6">Subject</th>
+                            <th class="py-3.5 px-6">Status</th>
+                            <th class="py-3.5 px-6">Priority (SLA)</th>
+                            <th class="py-3.5 px-6">Created</th>
+                            <th class="py-3.5 px-6 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketTableBody" class="divide-y divide-slate-100 text-sm font-normal">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards View -->
+            <div id="ticketMobileCards" class="block md:hidden divide-y divide-slate-100">
+            </div>
+
+            <!-- Empty State Display -->
+            <div id="emptyState" class="hidden text-center py-12 px-4">
+                <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <h3 class="mt-2 text-sm font-semibold text-slate-900">No tickets found</h3>
+                <p class="mt-1 text-sm text-slate-500">Try adjusting your filters or click <strong>New Ticket</strong> to add a ticket.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal 1: Create Ticket -->
+    <div id="createModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-base font-semibold text-slate-900">DataStraw | New Support Ticket</h3>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+
+            <form id="createForm" onsubmit="handleCreateTicket(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Customer Name</label>
+                    <input type="text" id="custName" required placeholder="Jane Doe" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Customer Email</label>
+                    <input type="email" id="custEmail" required placeholder="jane@example.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Subject / Issue Title</label>
+                    <input type="text" id="custSubject" required placeholder="Brief summary of the issue" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Detailed Description</label>
+                    <textarea id="custDesc" rows="4" required placeholder="Provide clear steps to reproduce or details about the support request..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal(false)" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">Submit Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Ticket Detail View & Update -->
+    <div id="detailModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <span id="detailTicketId" class="text-sm font-bold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md border border-indigo-200">TKT-0000</span>
+                    <span id="detailStatusBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full">Open</span>
+                    <span id="detailPriorityBadge"></span>
+                </div>
+                <button onclick="toggleDetailModal(false)" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 flex-1">
+                <!-- Ticket Header Info -->
+                <div class="space-y-1">
+                    <h2 id="detailSubject" class="text-xl font-bold text-slate-900">Issue Subject</h2>
+                    <p id="detailCustomer" class="text-sm text-slate-500">Customer Details</p>
+                </div>
+
+                <!-- Description Card -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200/80">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Issue Description</h4>
+                    <p id="detailDescription" class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">Description content...</p>
+                </div>
+
+                <!-- Activity / Notes Log -->
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Activity History & Notes</h4>
+                    <div id="detailNotesList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    </div>
+                </div>
+
+                <!-- Update Status Box Controls -->
+                <div class="border-t border-slate-100 pt-4 space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Update Status</label>
+                            <span id="statusRuleNotice" class="text-[11px] text-amber-600 font-medium hidden">Reverting from In Progress back to Open is locked</span>
+                        </div>
+
+                        <!-- 3 Interactive Status Boxes with Checkmarks -->
+                        <div id="statusBoxContainer" class="grid grid-cols-3 gap-2 sm:gap-3">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Add Internal Note / Comment</label>
+                        <textarea id="updateNote" rows="2" placeholder="Write internal response or update notes..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button type="button" onclick="toggleDetailModal(false)" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition">Close</button>
+                <button onclick="handleUpdateTicket()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frontend Application Logic -->
+    <script>
+        const API_URL = "/api";
+        let activeTicketId = null;
+        let activeTicketOriginalStatus = "Open";
+        let selectedStatus = "Open";
+
+        function getPriorityLevel(createdAt) {
+            const elapsedHours = (new Date() - new Date(createdAt)) / (1000 * 60 * 60);
+            if (elapsedHours < 2) return "Low";
+            if (elapsedHours < 12) return "Medium";
+            return "Urgent";
+        }
+
+        async function fetchTickets() {
+            const search = document.getElementById("searchInput").value;
+            const status = document.getElementById("statusFilter").value;
+            const priority = document.getElementById("priorityFilter").value;
+
+            let url = `${API_URL}/tickets?`;
+            if (search) url += `search=${encodeURIComponent(search)}&`;
+            if (status) url += `status=${encodeURIComponent(status)}`;
+
+            try {
+                const res = await fetch(url);
+                let tickets = await res.json();
+
+                if (!search && !status && !priority) {
+                    updateMetrics(tickets);
+                }
+
+                // Apply priority filter in frontend based on SLA age
+                if (priority) {
+                    tickets = tickets.filter(t => getPriorityLevel(t.created_at) === priority);
+                }
+
+                renderTickets(tickets);
+            } catch (err) {
+                console.error("Failed to load DataStraw tickets:", err);
+            }
+        }
+
+        function updateMetrics(tickets) {
+            document.getElementById("statTotal").innerText = tickets.length;
+            document.getElementById("statOpen").innerText = tickets.filter(t => t.status === "Open").length;
+            document.getElementById("statInProgress").innerText = tickets.filter(t => t.status === "In Progress").length;
+
+            // Calculate Urgent Tickets (> 12 hours & Unresolved)
+            const urgentCount = tickets.filter(t => {
+                if (t.status === "Closed") return false;
+                return getPriorityLevel(t.created_at) === "Urgent";
+            }).length;
+
+            document.getElementById("statUrgent").innerText = urgentCount;
+        }
+
+        function getPriorityBadgeHTML(createdAt, status) {
+            if (status === "Closed") {
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">Resolved</span>`;
+            }
+
+            const priority = getPriorityLevel(createdAt);
+
+            if (priority === "Low") {
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200"><span class="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5"></span>Low</span>`;
+            } else if (priority === "Medium") {
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>Medium</span>`;
+            } else {
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span>Urgent</span>`;
+            }
+        }
+
+        function renderTickets(tickets) {
+            const tbody = document.getElementById("ticketTableBody");
+            const mobileCards = document.getElementById("ticketMobileCards");
+            const emptyState = document.getElementById("emptyState");
+
+            tbody.innerHTML = "";
+            mobileCards.innerHTML = "";
+
+            if (tickets.length === 0) {
+                emptyState.classList.remove("hidden");
+                return;
+            } else {
+                emptyState.classList.add("hidden");
+            }
+
+            tickets.forEach(t => {
+                const formattedDate = new Date(t.created_at).toLocaleDateString("en-US", {
+                    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+                });
+
+                // Desktop Table Row
+                const row = document.createElement("tr");
+                row.className = "hover:bg-slate-50/80 transition duration-150 border-b border-slate-100";
+                row.innerHTML = `
+                    <td class="py-4 px-6 font-semibold text-indigo-600">${t.ticket_id}</td>
+                    <td class="py-4 px-6">
+                        <div class="font-medium text-slate-900">${t.customer_name}</div>
+                        <div class="text-xs text-slate-500">${t.customer_email || ''}</div>
+                    </td>
+                    <td class="py-4 px-6 text-slate-700 max-w-xs truncate">${t.subject}</td>
+                    <td class="py-4 px-6">${getStatusBadgeHTML(t.status)}</td>
+                    <td class="py-4 px-6">${getPriorityBadgeHTML(t.created_at, t.status)}</td>
+                    <td class="py-4 px-6 text-xs text-slate-500">${formattedDate}</td>
+                    <td class="py-4 px-6 text-right">
+                        <button onclick="viewTicket('${t.ticket_id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">View</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+
+                // Mobile Card View
+                const card = document.createElement("div");
+                card.className = "p-4 space-y-3";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-indigo-600 text-sm">${t.ticket_id}</span>
+                        <div class="flex items-center gap-2">
+                            ${getPriorityBadgeHTML(t.created_at, t.status)}
+                            ${getStatusBadgeHTML(t.status)}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-slate-900 text-sm">${t.subject}</h4>
+                        <p class="text-xs text-slate-500">${t.customer_name} &bull; ${formattedDate}</p>
+                    </div>
+                    <div class="flex justify-end pt-1">
+                        <button onclick="viewTicket('${t.ticket_id}')" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">Manage Ticket</button>
+                    </div>
+                `;
+                mobileCards.appendChild(card);
+            });
+        }
+
+        function getStatusBadgeHTML(status) {
+            if (status === "Open") {
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span>Open</span>`;
+            } else if (status === "In Progress") {
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>In Progress</span>`;
+            }
+            return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Closed</span>`;
+        }
+
+        async function handleCreateTicket(e) {
+            e.preventDefault();
+            const body = {
+                customer_name: document.getElementById("custName").value,
+                customer_email: document.getElementById("custEmail").value,
+                subject: document.getElementById("custSubject").value,
+                description: document.getElementById("custDesc").value
+            };
+
+            await fetch(`${API_URL}/tickets`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+
+            toggleModal(false);
+            document.getElementById("createForm").reset();
+            fetchTickets();
+        }
+
+        async function viewTicket(ticketId) {
+            activeTicketId = ticketId;
+            const res = await fetch(`${API_URL}/tickets/${ticketId}`);
+            const t = await res.json();
+
+            activeTicketOriginalStatus = t.status;
+            selectedStatus = t.status;
+
+            document.getElementById("detailTicketId").innerText = t.ticket_id;
+            document.getElementById("detailStatusBadge").outerHTML = `<div id="detailStatusBadge">${getStatusBadgeHTML(t.status)}</div>`;
+            document.getElementById("detailPriorityBadge").innerHTML = getPriorityBadgeHTML(t.created_at, t.status);
+            document.getElementById("detailSubject").innerText = t.subject;
+            document.getElementById("detailCustomer").innerText = `Requested by ${t.customer_name} (${t.customer_email})`;
+            document.getElementById("detailDescription").innerText = t.description;
+
+            renderStatusBoxes();
+
+            const notesContainer = document.getElementById("detailNotesList");
+            if (t.notes && t.notes.length > 0) {
+                notesContainer.innerHTML = t.notes.map(n => `
+                    <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-lg text-xs space-y-1">
+                        <p class="text-slate-700">${n.note_text}</p>
+                        <p class="text-slate-400 text-[10px]">${new Date(n.created_at).toLocaleString()}</p>
+                    </div>
+                `).join('');
+            } else {
+                notesContainer.innerHTML = `<p class="text-xs text-slate-400 italic">No notes appended yet.</p>`;
+            }
+
+            toggleDetailModal(true);
+        }
+
+        function renderStatusBoxes() {
+            const container = document.getElementById("statusBoxContainer");
+            const notice = document.getElementById("statusRuleNotice");
+            const statuses = ["Open", "In Progress", "Closed"];
+
+            const lockOpen = (activeTicketOriginalStatus === "In Progress" || activeTicketOriginalStatus === "Closed");
+            const lockInProgress = (activeTicketOriginalStatus === "Closed");
+
+            if (lockOpen) {
+                notice.classList.remove("hidden");
+            } else {
+                notice.classList.add("hidden");
+            }
+
+            container.innerHTML = statuses.map(s => {
+                let isDisabled = false;
+                if (s === "Open" && lockOpen) isDisabled = true;
+                if (s === "In Progress" && lockInProgress) isDisabled = true;
+
+                const isSelected = (selectedStatus === s);
+
+                let baseClasses = "flex flex-col sm:flex-row items-center justify-between p-3 rounded-xl border text-xs font-semibold transition cursor-pointer select-none";
+                let colorClasses = "";
+
+                if (isDisabled) {
+                    colorClasses = "bg-slate-100 border-slate-200 text-slate-400 opacity-40 cursor-not-allowed pointer-events-none";
+                } else if (isSelected) {
+                    if (s === "Open") colorClasses = "bg-rose-50 border-2 border-rose-500 text-rose-700 shadow-sm";
+                    else if (s === "In Progress") colorClasses = "bg-amber-50 border-2 border-amber-500 text-amber-700 shadow-sm";
+                    else colorClasses = "bg-emerald-50 border-2 border-emerald-500 text-emerald-700 shadow-sm";
+                } else {
+                    colorClasses = "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50";
+                }
+
+                const checkmarkIcon = isSelected ? `
+                    <svg class="w-4 h-4 ml-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                ` : `
+                    <div class="w-4 h-4 ml-1 border border-slate-300 rounded-full flex-shrink-0"></div>
+                `;
+
+                return `
+                    <div onclick="selectStatus('${s}', ${isDisabled})" class="${baseClasses} ${colorClasses}">
+                        <span>${s}</span>
+                        ${checkmarkIcon}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectStatus(s, isDisabled) {
+            if (isDisabled) return;
+            selectedStatus = s;
+            renderStatusBoxes();
+        }
+
+        async function handleUpdateTicket() {
+            const note = document.getElementById("updateNote").value;
+
+            await fetch(`${API_URL}/tickets/${activeTicketId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: selectedStatus, notes: note })
+            });
+
+            document.getElementById("updateNote").value = "";
+            toggleDetailModal(false);
+            fetchTickets();
+        }
+
+        function toggleModal(show) { document.getElementById("createModal").classList.toggle("hidden", !show); }
+        function toggleDetailModal(show) { document.getElementById("detailModal").classList.toggle("hidden", !show); }
+
+        // Initial Load
+        fetchTickets();
+    </script>
+</body>
+</html>
