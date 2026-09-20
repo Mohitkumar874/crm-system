@@ -241,8 +241,18 @@
         let activeTicketOriginalStatus = "Open";
         let selectedStatus = "Open";
 
+        // Helper function to force UTC parsing for timestamps from Railway
+        function parseDate(dateStr) {
+            if (!dateStr) return new Date();
+            let str = typeof dateStr === 'string' ? dateStr.trim().replace(' ', 'T') : dateStr;
+            if (typeof str === 'string' && !str.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(str)) {
+                str += 'Z';
+            }
+            return new Date(str);
+        }
+
         function getPriorityLevel(createdAt) {
-            const elapsedHours = (new Date() - new Date(createdAt)) / (1000 * 60 * 60);
+            const elapsedHours = (new Date() - parseDate(createdAt)) / (1000 * 60 * 60);
             if (elapsedHours < 2) return "Low";
             if (elapsedHours < 12) return "Medium";
             return "Urgent";
@@ -322,8 +332,8 @@
             }
 
             tickets.forEach(t => {
-                const formattedDate = new Date(t.created_at).toLocaleDateString("en-US", {
-                    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+                const formattedDate = parseDate(t.created_at).toLocaleString("en-US", {
+                    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true
                 });
 
                 // Desktop Table Row
@@ -419,7 +429,7 @@
                 notesContainer.innerHTML = t.notes.map(n => `
                     <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-lg text-xs space-y-1">
                         <p class="text-slate-700">${n.note_text}</p>
-                        <p class="text-slate-400 text-[10px]">${new Date(n.created_at).toLocaleString()}</p>
+                        <p class="text-slate-400 text-[10px]">${parseDate(n.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}</p>
                     </div>
                 `).join('');
             } else {
