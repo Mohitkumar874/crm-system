@@ -23,58 +23,31 @@ A lightweight, high-performance Support Desk & CRM web application built with **
 - **Database:** SQLite (Development) / PostgreSQL (Production)
 - **Deployment:** Railway
 
----Architecture
-+-----------------------------------------------------------------------------------+
-|                                 CLIENT LAYER                                      |
-|                                                                                   |
-|    +-------------------------------------------------------------------------+    |
-|    |                      Browser Frontend (static/index.html)               |    |
-|    |  - Tailwind CSS UI Components                                           |    |
-|    |  - Live Search-as-you-type & Dynamic Status Filter                      |    |
-|    |  - Asynchronous HTTP Client (Vanilla JavaScript Fetch API)              |    |
-|    +-------------------------------------------------------------------------+    |
-+----------------------------------------|------------------------------------------+
-                                         |
-                                HTTP GET / POST / PUT
-                                Requests (JSON Payloads)
-                                         |
-+----------------------------------------v------------------------------------------+
-|                            RAILWAY CLOUD PLATFORM                                 |
-|                                                                                   |
-|  +-----------------------------------------------------------------------------+  |
-|  |                     Uvicorn ASGI Web Server (Port 8000)                     |  |
-|  +-------------------------------------|---------------------------------------+  |
-|                                        v                                          |
-|  +-----------------------------------------------------------------------------+  |
-|  |                     FastAPI Application (app/main.py)                       |  |
-|  |  - CORS Middleware (Cross-Origin Resource Sharing Enablement)               |  |
-|  |  - API Router Mapping (`/api/tickets`)                                      |  |
-|  +-------------------------------------|---------------------------------------+  |
-|                                        v                                          |
-|  +-----------------------------------------------------------------------------+  |
-|  |                  API Controller Router (app/routes/tickets.py)              |  |
-|  |  - POST /api/tickets          --> Generates TKT-XXXX & Creates Ticket      |  |
-|  |  - GET  /api/tickets          --> Handles Search Queries & Status Filters  |  |
-|  |  - GET  /api/tickets/{id}     --> Returns Detailed Ticket Data + Notes     |  |
-|  |  - PUT  /api/tickets/{id}     --> Updates Status & Appends New Notes       |  |
-|  +-------------------|--------------------------------------|------------------+  |
-|                      |                                      |                     |
-|             Data Validation                         DB Query Execution            |
-|                      v                                      v                     |
-|  +-------------------------------+      +--------------------------------------+  |
-|  | Pydantic Schemas              |      | SQLAlchemy ORM Models                |  |
-|  | (app/schemas/ticket.py)       |      | (Ticket & Note DB Entities)          |  |
-|  +-------------------------------+      +-------------------|------------------+  |
-|                                                             |                     |
-|                                                  Read / Write Connections         |
-|                                                             v                     |
-|  +-----------------------------------------------------------------------------+  |
-|  |                            Relational Database                              |  |
-|  |                            (SQLite / PostgreSQL)                            |  |
-|  +-----------------------------------------------------------------------------+  |
-+-----------------------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    subgraph Client ["1. Client Layer"]
+        A["Frontend UI (index.html)"]
+        B["Tailwind CSS & Vanilla JS"]
+        A <--> B
+    end
 
+    subgraph Server ["2. Railway Cloud Server"]
+        C["Uvicorn Web Server"]
+        D["FastAPI Engine"]
+        E["API Routes (/api/tickets)"]
+        F["Pydantic Data Validation"]
+        G["SQLAlchemy ORM"]
+        H[("SQLite Database")]
 
+        C --> D
+        D --> E
+        E <--> F
+        E <--> G
+        G <--> H
+    end
+
+    B <==>|"REST API (JSON)"| C
+```
 
 ## 📁 Project Structure
 
